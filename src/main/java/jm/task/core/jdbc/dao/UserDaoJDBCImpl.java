@@ -15,7 +15,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     Connection connection = getConnection();
 
     public void createUsersTable() {
-        Statement statement = null;
+
         String sql = "CREATE TABLE User" +
                 "(Id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                 "Name VARCHAR(45)," +
@@ -23,50 +23,40 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
                 "age TINYINT(3) )";
 
         try {
-            statement = connection.createStatement();
+            Statement statement = connection.createStatement();
             statement.executeUpdate(sql);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
             System.out.println("Таблица с таким именем уже существует");
         }
     }
 
     public void dropUsersTable() {
-        Statement statement = null;
 
         String sql = "DROP TABLE User";
 
         try {
-            statement = connection.createStatement();
+            Statement statement = connection.createStatement();
             statement.executeUpdate(sql);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
             System.out.println("Таблицы с таким именем не существует");
         }
     }
 
     public void saveUser(String name, String lastName, byte age) throws SQLException {
-        PreparedStatement preparedStatement = null;
 
         String sql = "INSERT INTO User (Name, lastName, age) VALUES (?, ?, ?)";
 
-        try {
-            preparedStatement = connection.prepareStatement(sql);
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
 
             preparedStatement.executeUpdate();
+            System.out.println("User с именем – " + name + " добавлен в базу данных");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             System.out.println("Ошибка добавления в таблицу");
-        } finally {
-            if (preparedStatement != null) {
-                preparedStatement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
         }
 
 
@@ -81,7 +71,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.out.println("Ошибка удаления юзера по id");
         }
         finally {
             if (preparedStatement != null) {
@@ -97,7 +87,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     public List<User> getAllUsers() throws SQLException {
         List<User> userList = new ArrayList<>();
 
-        String sql = "SELECT Id, Name, secondName, age FROM USER";
+        String sql = "SELECT Id, Name, lastName, age FROM USER";
         Statement statement = null;
 
         try {
@@ -114,6 +104,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            System.out.println("Ошибка в списке всех юзеров");
         }
         finally {
             if (statement != null) {
@@ -135,7 +126,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
             statement = connection.createStatement();
             statement.executeUpdate(sql);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.out.println("Ошибка очистки таблицы");
         }
     }
 }
