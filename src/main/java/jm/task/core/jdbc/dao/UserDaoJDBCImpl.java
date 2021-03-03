@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDaoJDBCImpl extends Util implements UserDao{
+public class UserDaoJDBCImpl extends Util implements UserDao {
     public UserDaoJDBCImpl() {
 
     }
@@ -42,11 +42,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao{
         }
     }
 
-    public void saveUser(String name, String lastName, byte age) {
+    public void saveUser(String name, String lastName, byte age) throws SQLException {
 
         String sql = "INSERT INTO User (Name, lastName, age) VALUES (?, ?, ?)";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
@@ -63,14 +63,20 @@ public class UserDaoJDBCImpl extends Util implements UserDao{
     }
 
     public void removeUserById(long id) throws SQLException {
+        PreparedStatement preparedStatement = null;
+        String sql = "SELECT Id, Name, secondName, age FROM USER WHERE Id=?";
 
-        String sql = "DELETE FROM USER WHERE ID=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try {
+            preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
         } catch (SQLException throwables) {
             System.out.println("Ошибка удаления юзера по id");
-        } finally {
+        }
+        finally {
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
             if (connection != null) {
                 connection.close();
             }
@@ -82,8 +88,10 @@ public class UserDaoJDBCImpl extends Util implements UserDao{
         List<User> userList = new ArrayList<>();
 
         String sql = "SELECT Id, Name, lastName, age FROM USER";
+        Statement statement = null;
 
-        try (Statement statement = connection.createStatement()) {
+        try {
+            statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 User user = new User();
@@ -97,7 +105,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao{
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             System.out.println("Ошибка в списке всех юзеров");
-        } finally {
+        }
+        finally {
+            if (statement != null) {
+                statement.close();
+            }
             if (connection != null) {
                 connection.close();
             }
@@ -105,7 +117,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao{
         return userList;
     }
 
-    public void cleanUsersTable()  {
+    public void cleanUsersTable() {
         Statement statement = null;
 
         String sql = "DELETE FROM User";
