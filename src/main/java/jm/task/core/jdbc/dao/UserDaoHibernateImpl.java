@@ -57,17 +57,14 @@ public class UserDaoHibernateImpl extends Util implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         Transaction transaction = null;
 
-        String sql = "INSERT INTO User (Name, lastName, age) VALUES (?, ?, ?)";
+        User user = new User();
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
-            Query query = session.createSQLQuery(sql);
-            query.setParameter(1, name);
-            query.setParameter(2, lastName);
-            query.setParameter(3, age);
-            query.executeUpdate();
-
+            user.setName(name);
+            user.setLastName(lastName);
+            user.setAge(age);
+            session.save(user);
             transaction.commit();
         } catch (Exception e) {
 
@@ -79,13 +76,12 @@ public class UserDaoHibernateImpl extends Util implements UserDao {
     public void removeUserById(long id) {
         Transaction transaction = null;
 
-        String sql = "DELETE FROM User WHERE ID = ?";
+        String hql = "DELETE FROM User WHERE id = :id";
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
-            Query query = session.createSQLQuery(sql);
-            query.setParameter(1, id);
+            Query query = session.createQuery(hql);
+            query.setParameter("id", id);
             query.executeUpdate();
             transaction.commit();
         } catch (Exception e) {
@@ -107,11 +103,11 @@ public class UserDaoHibernateImpl extends Util implements UserDao {
         public void cleanUsersTable () {
             Transaction transaction = null;
 
-            String sql = "TRUNCATE TABLE User";
+            String hql = "DELETE User";
 
             try (Session session = sessionFactory.openSession()) {
                 transaction = session.beginTransaction();
-                session.createSQLQuery(sql).executeUpdate();
+                session.createQuery(hql).executeUpdate();
                 transaction.commit();
             } catch (Exception e) {
 
